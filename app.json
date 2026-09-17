@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "روائس",
+    "slug": "rawaes-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "rawaesapp",
+    "userInterfaceStyle": "light",
+    "primaryColor": "#003749",
+    "backgroundColor": "#fdfbf6",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rawaes.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "نستخدم موقعك لتحديد عنوان التوصيل وحساب رسوم التوصيل بدقة."
+      }
+    },
+    "android": {
+      "package": "com.rawaes.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#003749",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "config": {
+        "googleMaps": {
+          "apiKey": "REPLACE_WITH_REAL_ANDROID_GOOGLE_MAPS_API_KEY"
+        }
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#fdfbf6"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "نستخدم موقعك لتحديد عنوان التوصيل وحساب رسوم التوصيل بدقة."
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
