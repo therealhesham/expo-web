@@ -29,7 +29,11 @@
         "googleMaps": {
           "apiKey": "REPLACE_WITH_REAL_ANDROID_GOOGLE_MAPS_API_KEY"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -57,6 +61,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a8dadfbf-b3a8-44b0-8243-aecf7260c414"
+      }
+    },
+    "owner": "heshamahmedbadr"
   }
 }
