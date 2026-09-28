@@ -9,12 +9,14 @@ import { Chip } from '@/components/ui/Chip';
 import { type Car } from '@/data/cars';
 import { fetchFleet, fetchCategories, mapApiCarSummaryToCar, type ApiCategory } from '@/lib/api';
 import { useBooking } from '@/context/BookingContext';
+import { useAuth } from '@/context/AuthContext';
 
 type FilterKey = string | 'all';
 
 export default function FleetScreen() {
   const router = useRouter();
   const { trip, setSelectedCar } = useBooking();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<FilterKey>('all');
   const [cars, setCars] = useState<Car[] | null>(null);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
@@ -43,7 +45,7 @@ export default function FleetScreen() {
 
   function startBooking(car: Car) {
     setSelectedCar(car);
-    router.push('/id-verification');
+    router.push(user ? '/id-verification' : '/login');
   }
 
   return (

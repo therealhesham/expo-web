@@ -396,7 +396,11 @@ export async function uploadKycImage(localUri: string, token: string): Promise<s
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   });
-  if (!res.ok) throw new Error(`Upload failed with ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = typeof body.message === 'string' ? body.message : `تعذّر رفع الصورة (${res.status}).`;
+    throw new Error(message);
+  }
   const data = (await res.json()) as { ok: boolean; url: string };
   return data.url;
 }

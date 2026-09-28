@@ -84,15 +84,23 @@ export default function IdVerificationScreen() {
       ? ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.7 })
       : ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.7 }));
 
-    if (result.canceled || !result.assets[0] || !token) return;
+    if (result.canceled || !result.assets[0]) return;
+    if (!token) {
+      Alert.alert('تسجيل الدخول مطلوب', 'سجّل الدخول مرة أخرى للمتابعة برفع الصورة.', [
+        { text: 'تسجيل الدخول', onPress: () => router.push('/login') },
+      ]);
+      return;
+    }
     const localUri = result.assets[0].uri;
 
     setUploading((prev) => ({ ...prev, [target]: true }));
     try {
       const remoteUrl = await uploadKycImage(localUri, token);
       setKyc(target === 'id' ? { idImageUri: remoteUrl } : { licenseImageUri: remoteUrl });
-    } catch {
-      Alert.alert('تعذّر رفع الصورة', 'تأكد من اتصالك بالسيرفر وحاول مرة أخرى.');
+    } catch (err) {
+      console.error('uploadKycImage failed', err);
+      const message = err instanceof Error ? err.message : 'تأكد من اتصالك بالسيرفر وحاول مرة أخرى.';
+      Alert.alert('تعذّر رفع الصورة', message);
     } finally {
       setUploading((prev) => ({ ...prev, [target]: false }));
     }
@@ -229,7 +237,7 @@ export default function IdVerificationScreen() {
                 disabled={uploading.id}
               >
                 {uploading.id ? (
-                  <ActivityIndicator size="small" color={colors.success} />
+                  <ActivityIndicator size="small" color={colors.petrol} />
                 ) : (
                   <Text style={styles.changeBtnText}>تغيير</Text>
                 )}
@@ -361,8 +369,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 11,
     borderWidth: 1,
-    borderColor: colors.successBorder,
-    backgroundColor: colors.successBg,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
     borderRadius: radii.lg,
     padding: 12,
   },
@@ -378,16 +386,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   uploadedTitle: { fontSize: 13, fontFamily: fontFamily.extraBold, color: colors.ink, textAlign: textAlignStart },
-  uploadedSub: { marginTop: 2, fontSize: 11, fontFamily: fontFamily.bold, color: colors.success, textAlign: textAlignStart },
+  uploadedSub: { marginTop: 2, fontSize: 11, fontFamily: fontFamily.bold, color: colors.goldText, textAlign: textAlignStart },
   changeBtn: {
     borderWidth: 1,
-    borderColor: colors.successBorder,
-    backgroundColor: colors.card,
+    borderColor: colors.border,
+    backgroundColor: colors.sandLight,
     borderRadius: 10,
     paddingVertical: 8,
     paddingHorizontal: 11,
   },
-  changeBtnText: { fontSize: 11, fontFamily: fontFamily.extraBold, color: colors.success },
+  changeBtnText: { fontSize: 11, fontFamily: fontFamily.extraBold, color: colors.petrol },
   dashedCard: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
