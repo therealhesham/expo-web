@@ -108,6 +108,10 @@ interface BookingState {
     deliveryFee: number;
     vat: number;
     total: number;
+    // 'monthly' only when trip.period is 'monthly' AND the car actually has a
+    // monthly rate — otherwise this silently stays 'daily' (subtotal falls
+    // back to dailyRate × days) so screens can flag the fallback to the user.
+    periodApplied: 'daily' | 'monthly';
   };
 }
 
@@ -166,7 +170,9 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
 
   const pricing = useMemo(() => {
     const dailyRate = selectedCar.pricePerDay;
-    const subtotal = dailyRate * trip.days;
+    const monthlyRate = selectedCar.priceMonthly;
+    const periodApplied: 'daily' | 'monthly' = trip.period === 'monthly' && monthlyRate ? 'monthly' : 'daily';
+    const subtotal = periodApplied === 'monthly' ? monthlyRate! : dailyRate * trip.days;
     const extrasTotal = addonsCatalog.reduce(
       (sum, addon) => (extras[addon.slug] ? sum + addon.pricePerDay * trip.days : sum),
       0
@@ -176,7 +182,7 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const vatRate = (selectedCar.vatRatePercent ?? DEFAULT_VAT_RATE_PERCENT) / 100;
     const vat = Math.round(preVat * vatRate * 100) / 100;
     const total = Math.round((preVat + vat) * 100) / 100;
-    return { dailyRate, subtotal, extrasTotal, deliveryFee, vat, total };
+    return { dailyRate, subtotal, extrasTotal, deliveryFee, vat, total, periodApplied };
   }, [selectedCar, trip, extras, addonsCatalog]);
 
   const value: BookingState = {

@@ -62,10 +62,16 @@ export default function CarDetailScreen() {
   // own lib/pricing.ts and BookingContext's pricing calc.
   const vatRate = (car.vatRatePercent ?? 15) / 100;
   const dailyBeforeTax = car.pricePerDay;
-  const rentalBeforeTax = Math.round(dailyBeforeTax * trip.days * 100) / 100;
+  // "شهري" only applies when this car actually has a monthly rate — otherwise
+  // silently falls back to daily × days, same rule as BookingContext's pricing.
+  const monthlyApplies = trip.period === 'monthly' && !!car.priceMonthly;
+  const rentalBeforeTax = monthlyApplies
+    ? car.priceMonthly!
+    : Math.round(dailyBeforeTax * trip.days * 100) / 100;
   const vat = Math.round(rentalBeforeTax * vatRate * 100) / 100;
   const total = Math.round((rentalBeforeTax + vat) * 100) / 100;
   const monthlyTabby = Math.round((total / 4) * 100) / 100;
+  const monthlyUnavailable = trip.period === 'monthly' && !car.priceMonthly;
 
   return (
     <View style={styles.screen}>
@@ -126,8 +132,14 @@ export default function CarDetailScreen() {
 
           <View style={styles.pricingCard}>
             <Text style={styles.pricingLabel}>تفاصيل التسعير</Text>
-            <PriceLine label="السعر اليومي (قبل الضريبة)" value={formatSAR(dailyBeforeTax)} />
-            <PriceLine label={`الإيجار (${trip.days} أيام)`} value={formatSAR(rentalBeforeTax)} />
+            {monthlyApplies ? (
+              <PriceLine label="السعر الشهري (قبل الضريبة)" value={formatSAR(car.priceMonthly!)} />
+            ) : (
+              <>
+                <PriceLine label="السعر اليومي (قبل الضريبة)" value={formatSAR(dailyBeforeTax)} />
+                <PriceLine label={`الإيجار (${trip.days} أيام)`} value={formatSAR(rentalBeforeTax)} />
+              </>
+            )}
             <PriceLine
               label={`ضريبة القيمة المضافة ${(car.vatRatePercent ?? 15).toLocaleString('ar-SA')}٪`}
               value={formatSAR(vat)}
@@ -139,6 +151,11 @@ export default function CarDetailScreen() {
                 {formatSAR(total)} <Text style={styles.totalUnit}>ر.س</Text>
               </Text>
             </View>
+            {monthlyUnavailable && (
+              <Text style={styles.monthlyFallbackNote}>
+                السعر الشهري غير متاح لهذه السيارة — تم اعتماد السعر اليومي.
+              </Text>
+            )}
           </View>
 
           <View style={styles.tabbyBanner}>
@@ -150,7 +167,7 @@ export default function CarDetailScreen() {
 
       <SafeAreaView edges={['bottom']} style={styles.footer}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.footerLabel}>الإجمالي · {trip.days} أيام</Text>
+          <Text style={styles.footerLabel}>الإجمالي · {monthlyApplies ? 'شهر واحد' : `${trip.days} أيام`}</Text>
           <Text style={styles.footerTotal}>
             {formatSAR(total)} <Text style={styles.totalUnit}>ر.س</Text>
           </Text>
@@ -267,6 +284,13 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 13, fontFamily: fontFamily.black, color: colors.ink },
   totalValue: { fontSize: 20, fontFamily: fontFamily.black, color: colors.ink },
   totalUnit: { fontSize: 12, fontFamily: fontFamily.extraBold, color: colors.goldTextDim },
+  monthlyFallbackNote: {
+    marginTop: 8,
+    fontSize: 11,
+    fontFamily: fontFamily.medium,
+    color: colors.faint2,
+    textAlign: textAlignStart,
+  },
   tabbyBanner: {
     flexDirection: rowDir,
     alignItems: 'center',

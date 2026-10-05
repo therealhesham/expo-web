@@ -63,6 +63,7 @@ export function Button({
               <Ionicons name={icon} size={18} color={iconColor(variant)} />
             )}
             <Text
+              numberOfLines={1}
               style={[
                 styles.label,
                 variant === 'secondary' && styles.labelSecondary,

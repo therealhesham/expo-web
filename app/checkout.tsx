@@ -79,6 +79,7 @@ export default function CheckoutScreen() {
         deliveryBranchId: trip.pickupMode === 'delivery' ? trip.branchId : undefined,
         deliveryLat: trip.pickupMode === 'delivery' ? trip.deliveryLat : undefined,
         deliveryLng: trip.pickupMode === 'delivery' ? trip.deliveryLng : undefined,
+        rentalPeriodKind: trip.period === 'monthly' ? 'monthly' : 'daily',
       });
       setCoupon({ code: code.toUpperCase(), ...result });
       setCouponInput('');
@@ -106,7 +107,9 @@ export default function CheckoutScreen() {
             <Text style={styles.carName}>
               {selectedCar.make} {selectedCar.model} {selectedCar.year}
             </Text>
-            <Text style={styles.carSub}>أو مركبة مشابهة · {trip.days} أيام</Text>
+            <Text style={styles.carSub}>
+              أو مركبة مشابهة · {pricing.periodApplied === 'monthly' ? 'شهر واحد' : `${trip.days} أيام`}
+            </Text>
           </View>
           <Pressable
             onPress={() => router.push('/(tabs)/fleet')}
@@ -158,50 +161,58 @@ export default function CheckoutScreen() {
           </>
         )}
 
-        <Text style={[styles.sectionTitle, { marginTop: 18, marginBottom: 8 }]}>كود الخصم</Text>
-        {coupon ? (
-          <View style={styles.couponAppliedRow}>
-            <Ionicons name="pricetag" size={16} color={colors.success} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.couponAppliedCode}>{coupon.code}</Text>
-              <Text style={styles.couponAppliedLabel}>{coupon.label}</Text>
-            </View>
-            <Pressable
-              onPress={() => setCoupon(null)}
-              style={({ pressed }) => pressed && { opacity: pressedOpacity }}
-              hitSlop={8}
-            >
-              <Text style={styles.couponRemoveLink}>إزالة</Text>
-            </Pressable>
-          </View>
+        {trip.period === 'monthly' ? (
+          <Text style={[styles.sectionTitle, { marginTop: 18, marginBottom: 8 }]}>
+            أكواد الخصم غير متاحة حالياً للحجز الشهري
+          </Text>
         ) : (
-          <View>
-            <View style={styles.couponInputRow}>
-              <TextInput
-                style={styles.couponInput}
-                value={couponInput}
-                onChangeText={(v) => {
-                  setCouponInput(v);
-                  setCouponError(null);
-                }}
-                placeholder="أدخل كود الخصم"
-                placeholderTextColor={colors.faint2}
-                autoCapitalize="characters"
-              />
-              <Pressable
-                style={({ pressed }) => [
-                  styles.couponApplyBtn,
-                  (!couponInput.trim() || couponLoading) && styles.couponApplyBtnDisabled,
-                  pressed && { opacity: pressedOpacity },
-                ]}
-                onPress={applyCoupon}
-                disabled={!couponInput.trim() || couponLoading}
-              >
-                <Text style={styles.couponApplyText}>{couponLoading ? '...' : 'تطبيق'}</Text>
-              </Pressable>
-            </View>
-            {couponError && <Text style={styles.couponErrorText}>{couponError}</Text>}
-          </View>
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: 18, marginBottom: 8 }]}>كود الخصم</Text>
+            {coupon ? (
+              <View style={styles.couponAppliedRow}>
+                <Ionicons name="pricetag" size={16} color={colors.success} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.couponAppliedCode}>{coupon.code}</Text>
+                  <Text style={styles.couponAppliedLabel}>{coupon.label}</Text>
+                </View>
+                <Pressable
+                  onPress={() => setCoupon(null)}
+                  style={({ pressed }) => pressed && { opacity: pressedOpacity }}
+                  hitSlop={8}
+                >
+                  <Text style={styles.couponRemoveLink}>إزالة</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View>
+                <View style={styles.couponInputRow}>
+                  <TextInput
+                    style={styles.couponInput}
+                    value={couponInput}
+                    onChangeText={(v) => {
+                      setCouponInput(v);
+                      setCouponError(null);
+                    }}
+                    placeholder="أدخل كود الخصم"
+                    placeholderTextColor={colors.faint2}
+                    autoCapitalize="characters"
+                  />
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.couponApplyBtn,
+                      (!couponInput.trim() || couponLoading) && styles.couponApplyBtnDisabled,
+                      pressed && { opacity: pressedOpacity },
+                    ]}
+                    onPress={applyCoupon}
+                    disabled={!couponInput.trim() || couponLoading}
+                  >
+                    <Text style={styles.couponApplyText}>{couponLoading ? '...' : 'تطبيق'}</Text>
+                  </Pressable>
+                </View>
+                {couponError && <Text style={styles.couponErrorText}>{couponError}</Text>}
+              </View>
+            )}
+          </>
         )}
 
         <View style={styles.tabbyBanner}>
@@ -285,12 +296,12 @@ function ExtraRow({
       onPress={onPress}
     >
       <View style={{ flex: 1 }}>
-        <Text style={styles.extraTitle}>{title}</Text>
-        <Text style={styles.extraPrice}>{price}</Text>
+        <Text style={styles.extraTitle} numberOfLines={1}>{title}</Text>
+        <Text style={styles.extraPrice} numberOfLines={1}>{price}</Text>
       </View>
       <View style={[styles.extraAction, selected && styles.extraActionSelected]}>
         {selected && <Ionicons name="checkmark" size={12} color={colors.gold} />}
-        <Text style={[styles.extraActionText, selected && styles.extraActionTextSelected]}>
+        <Text style={[styles.extraActionText, selected && styles.extraActionTextSelected]} numberOfLines={1}>
           {selected ? 'تم الإختيار' : 'إضافة'}
         </Text>
       </View>
@@ -328,6 +339,7 @@ const styles = StyleSheet.create({
   extraAction: {
     flexDirection: rowDir,
     alignItems: 'center',
+    flexShrink: 0,
     gap: 5,
     borderWidth: 1,
     borderColor: colors.border,

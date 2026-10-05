@@ -1,0 +1,14 @@
+node_modules
+.git
+.expo
+.claude
+.vscode
+dist
+web-build
+server
+*.apk
+*.aab
+.env*
+Dockerfile
+.dockerignore
+fix-docker.sh

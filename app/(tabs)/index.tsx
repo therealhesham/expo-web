@@ -586,9 +586,9 @@ const styles = StyleSheet.create({
   trustText: { fontSize: 11.5, fontFamily: fontFamily.bold, color: colors.inkSoft },
   featuredRow: {
     flexDirection: rowDir,
-    gap: 12,
+    gap: 16,
     paddingHorizontal: 20,
-    paddingBottom: 6,
+    paddingVertical: 6,
   },
   featuredLoading: { marginVertical: 24 },
 });

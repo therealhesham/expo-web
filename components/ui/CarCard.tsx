@@ -40,7 +40,7 @@ export function CarCard({ car, variant = 'compact', onPress, onBookPress }: Prop
         onPressOut={onPressOut}
         style={({ pressed }) => pressed && { opacity: pressedOpacity }}
       >
-        <Animated.View style={[styles.compactCard, animatedStyle]}>
+        <Animated.View style={[styles.compactCard, shadow.soft, animatedStyle]}>
           <View style={[styles.compactImage, { backgroundColor: car.tint }]}>
             {car.image ? (
               <Image source={{ uri: car.image }} resizeMode="cover" style={StyleSheet.absoluteFill} />
@@ -112,14 +112,16 @@ export function CarCard({ car, variant = 'compact', onPress, onBookPress }: Prop
         </View>
 
         <View style={styles.footerRow}>
-          <View>
-            <Text style={styles.totalHint}>الإجمالي ٤ أيام {formatSAR(car.pricePerDay * 4)} ر.س</Text>
+          <View style={styles.footerPriceCol}>
+            <Text style={styles.totalHint} numberOfLines={1}>
+              الإجمالي ٤ أيام {formatSAR(car.pricePerDay * 4)} ر.س
+            </Text>
             <View style={styles.priceRow}>
               {hasDiscount && (
-                <Text style={styles.strike}>{formatSAR(car.originalPricePerDay!)}</Text>
+                <Text style={styles.strike} numberOfLines={1}>{formatSAR(car.originalPricePerDay!)}</Text>
               )}
-              <Text style={styles.priceBigLarge}>{formatSAR(car.pricePerDay)}</Text>
-              <Text style={styles.priceUnit}>ر.س / يومياً</Text>
+              <Text style={styles.priceBigLarge} numberOfLines={1}>{formatSAR(car.pricePerDay)}</Text>
+              <Text style={styles.priceUnit} numberOfLines={1}>ر.س / يومياً</Text>
             </View>
           </View>
           <Button label="احجز الآن" onPress={onBookPress} fullWidth={false} style={styles.bookBtn} />
@@ -141,22 +143,18 @@ function Spec({ value, label }: { value: number; label: string }) {
 const styles = StyleSheet.create({
   // compact (home carousel)
   compactCard: {
-    width: 198,
+    width: 212,
     borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
     backgroundColor: colors.card,
     overflow: 'hidden',
   },
   compactImage: {
-    height: 96,
+    height: 118,
     alignItems: 'center',
     justifyContent: 'center',
   },
   compactBody: {
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderFaint,
+    padding: 14,
   },
   compactName: {
     fontSize: 13.5,
@@ -168,7 +166,7 @@ const styles = StyleSheet.create({
     color: colors.faint2,
   },
   similar: {
-    marginTop: 2,
+    marginTop: 3,
     fontSize: 10.5,
     fontFamily: fontFamily.medium,
     color: colors.faint2,
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
     flexDirection: rowDir,
     alignItems: 'baseline',
     gap: 4,
-    marginTop: 8,
+    marginTop: 10,
   },
   priceBig: {
     fontSize: 21,
@@ -295,6 +293,9 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 14,
   },
+  footerPriceCol: {
+    flex: 1,
+  },
   totalHint: {
     fontSize: 11,
     fontFamily: fontFamily.medium,
@@ -304,5 +305,6 @@ const styles = StyleSheet.create({
   bookBtn: {
     minHeight: 46,
     paddingHorizontal: 20,
+    flexShrink: 0,
   },
 });

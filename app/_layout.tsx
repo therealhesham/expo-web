@@ -8,19 +8,16 @@ import {
 } from '@expo-google-fonts/tajawal';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { colors } from '@/constants/theme';
 import { BookingProvider } from '@/context/BookingContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { OpeningScreen } from '@/components/ui/OpeningScreen';
 
 export { ErrorBoundary } from 'expo-router';
-
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-};
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +29,11 @@ export default function RootLayout() {
     Tajawal_800ExtraBold,
     Tajawal_900Black,
   });
+  // Gates the Stack itself (not a route) — expo-router's initialRouteName only
+  // affects back-behavior for deep links, it doesn't control what a cold
+  // launch shows first, so this is the only reliable way to put a branded
+  // moment before the tabs on every real app open.
+  const [showOpening, setShowOpening] = useState(true);
 
   useEffect(() => {
     if (error) throw error;
@@ -45,6 +47,10 @@ export default function RootLayout() {
 
   if (!loaded) {
     return null;
+  }
+
+  if (showOpening) {
+    return <OpeningScreen onDone={() => setShowOpening(false)} />;
   }
 
   return (

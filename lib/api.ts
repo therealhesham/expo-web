@@ -49,6 +49,7 @@ export interface ApiCarSummary {
   transmissionLabel: string;
   image: string | null;
   pricePerDay: number | null;
+  priceMonthly: number | null;
   vatRatePercent: number;
   branch: { id: number; name: string; slug: string };
   quantityAvailable: number;
@@ -234,6 +235,9 @@ export interface CreateBookingInput {
   // Re-validated server-side against the same rules /coupons/validate uses —
   // never trusted as a discount amount from the client.
   couponCode?: string;
+  // 'monthly' charges the car's flat monthly rate instead of daily × days —
+  // see server/src/bookings/pricing.util.ts. Omitted/'daily' keeps per-day billing.
+  rentalPeriodKind?: 'daily' | 'monthly';
 }
 
 export function createBooking(token: string, input: CreateBookingInput) {
@@ -255,6 +259,7 @@ export interface ValidateCouponInput {
   deliveryBranchId?: number;
   deliveryLat?: number;
   deliveryLng?: number;
+  rentalPeriodKind?: 'daily' | 'monthly';
 }
 
 export function validateCoupon(token: string, input: ValidateCouponInput) {
@@ -379,17 +384,17 @@ export async function uploadKycImage(localUri: string, token: string): Promise<s
   const ext = filename.split('.').pop()?.toLowerCase();
   const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
 
+  // Expo's global fetch (installed by default — see
+  // node_modules/expo/src/winter/runtime.native.ts) only accepts real Blob
+  // parts in FormData on every platform now; the old React Native
+  // {uri,name,type} shorthand throws "Unsupported FormDataPart
+  // implementation". Fetching the local file URI yields a real Blob on both
+  // web (blob:/data: URLs from expo-image-picker) and native (file:// URIs).
+  const rawBlob = await (await fetch(localUri)).blob();
+  const blob = rawBlob.type === mime ? rawBlob : rawBlob.slice(0, rawBlob.size, mime);
+
   const formData = new FormData();
-  if (Platform.OS === 'web') {
-    // On web, expo-image-picker returns a blob:/data: URL — fetch it to get
-    // a real Blob before attaching, since the {uri,name,type} shorthand
-    // below is a React Native-only FormData convention that browsers don't
-    // understand (it silently sends no file content, not an error).
-    const blob = await (await fetch(localUri)).blob();
-    formData.append('file', blob, filename);
-  } else {
-    formData.append('file', { uri: localUri, name: filename, type: mime } as unknown as Blob);
-  }
+  formData.append('file', blob, filename);
 
   const res = await fetch(`${API_BASE_URL}/uploads/kyc`, {
     method: 'POST',
@@ -436,6 +441,7 @@ export function mapApiCarSummaryToCar(api: ApiCarSummary): Car {
     transmission: api.transmission,
     transmissionLabel: api.transmissionLabel,
     pricePerDay: api.pricePerDay ?? 0,
+    priceMonthly: api.priceMonthly,
     hasAC: true,
     bodyStyle: inferBodyStyle(api.category),
     tint: TINT_PALETTE[api.id % TINT_PALETTE.length],
@@ -446,6 +452,7 @@ export function mapApiCarSummaryToCar(api: ApiCarSummary): Car {
 
 export function mapApiCarDetailToCar(api: ApiCarDetail): Car {
   const cheapest = api.availability.find((a) => a.pricePerDay != null);
+  const cheapestMonthly = api.availability.find((a) => a.priceMonthly != null);
   return {
     id: String(api.id),
     make: api.make,
@@ -461,6 +468,7 @@ export function mapApiCarDetailToCar(api: ApiCarDetail): Car {
     transmission: api.transmission,
     transmissionLabel: api.transmissionLabel,
     pricePerDay: api.pricePerDay ?? cheapest?.pricePerDay ?? 0,
+    priceMonthly: api.priceMonthly ?? cheapestMonthly?.priceMonthly ?? null,
     hasAC: true,
     bodyStyle: inferBodyStyle(api.category),
     tint: TINT_PALETTE[api.id % TINT_PALETTE.length],

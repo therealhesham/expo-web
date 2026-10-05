@@ -24,6 +24,9 @@ export interface Car {
   transmission: Transmission;
   transmissionLabel: string;
   pricePerDay: number;
+  // Flat monthly rate (excl. VAT) — null/undefined means this car has no
+  // monthly rate, so the "شهري" period falls back to daily × days pricing.
+  priceMonthly?: number | null;
   originalPricePerDay?: number;
   discountPercent?: number;
   hasAC: boolean;

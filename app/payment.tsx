@@ -126,7 +126,10 @@ export default function PaymentScreen() {
         },
         paymentMethodId: method,
         termsAccepted: true,
-        couponCode: coupon?.code,
+        // Coupons don't apply to monthly bookings (server rejects it too) —
+        // checkout.tsx already hides the coupon field in that case.
+        couponCode: trip.period === 'monthly' ? undefined : coupon?.code,
+        rentalPeriodKind: trip.period === 'monthly' ? 'monthly' : 'daily',
       });
 
       const bookingId = result.bookingRequestId;
@@ -219,7 +222,7 @@ export default function PaymentScreen() {
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} style={styles.footer}>
-        <Button label={ctaLabel} onPress={confirmBooking} loading={submitting} />
+        <Button label={ctaLabel} onPress={() => confirmBooking()} loading={submitting} />
       </SafeAreaView>
     </View>
   );

@@ -53,8 +53,6 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>أدخل رقم جوالك وسنرسل لك رمز تحقق عبر واتساب.</Text>
 
         <View style={[styles.phoneField, error && styles.phoneFieldError]}>
-          <Text style={styles.countryCode}>+966</Text>
-          <View style={styles.phoneDivider} />
           <TextInput
             value={phone}
             onChangeText={(v) => {
@@ -68,6 +66,8 @@ export default function LoginScreen() {
             style={styles.phoneInput}
             textAlign={textAlignStart}
           />
+          <View style={styles.phoneDivider} />
+          <Text style={styles.countryCode}>+966</Text>
         </View>
         {error && <Text style={styles.errorText}>{error}</Text>}
       </View>
