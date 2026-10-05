@@ -1,11 +1,16 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, fontFamily } from '@/constants/theme';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+  // Android 3-button/gesture nav bars draw over the app (edge-to-edge), so the
+  // tab bar must grow by the bottom inset instead of using a fixed height.
+  const bottomPad = Platform.OS === 'ios' ? 28 : Math.max(insets.bottom, 8);
+
   return (
     <Tabs
       screenOptions={{
@@ -20,9 +25,9 @@ export default function TabLayout() {
           backgroundColor: colors.white,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: Platform.select({ ios: 86, default: 64 }),
+          height: (Platform.OS === 'ios' ? 58 : 56) + bottomPad,
           paddingTop: 8,
-          paddingBottom: Platform.select({ ios: 28, default: 8 }),
+          paddingBottom: bottomPad,
         },
       }}
     >
